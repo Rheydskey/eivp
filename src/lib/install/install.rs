@@ -1,7 +1,7 @@
-use crate::lib::query::qstruct::package_struct::Source;
+use crate::lib::query::qstruct::package_struct::{Packages, Source};
 use crate::lib::query::query::query_for_install;
 use runas::Command;
-use std::{io::{self}};
+use std::io::{self};
 pub fn install(packages: Vec<String>) {
     /*if packages.len() != 0 {
 
@@ -14,16 +14,42 @@ pub fn install(packages: Vec<String>) {
     }
     let mut buffer = String::new();
     io::stdin().read_line(&mut buffer).unwrap();
-    std::process::Command::new("clear").status().unwrap();
-    let usize = buffer.trim().parse::<i64>().unwrap();
-    println!("I'll install {}", vec[usize as usize].name);
-    if vec[usize as usize].source == Source::Repo {
+    if buffer.contains("-") {
+        let split: Vec<&str> = buffer.split("-").collect();
+        println!("{}", split.len());
+        if split.len() == 2 {
+            for d in (split[0].clone().trim().parse::<i64>().unwrap() as usize)..(split[1].clone().trim().parse::<i64>().unwrap() as usize) {
+                install_package(&vec[d as usize]);
+            }
+        } else {
+            println!("too many or too few arguments")
+        }
+
+    } else if buffer.contains(" ") {
+        let split: Vec<&str> = buffer.split(" ").collect();
+        for f in 0..split.len(){
+            if !split[f].trim().is_empty() {
+                let n = &vec[split[f].clone().trim().parse::<i64>().unwrap() as usize];
+                install_package(n);
+            }
+        }
+    } else {
+        std::process::Command::new("clear").status().unwrap();
+        let usize: i64 = buffer.clone().trim().parse::<i64>().unwrap();
+        install_package(&vec[buffer.clone().trim().parse::<i64>().unwrap() as usize]);
+    };
+}
+
+fn install_package(package: &Packages) {
+    println!("I'll install {}", package.name);
+    let name = package.name.clone();
+    if package.source == Source::Repo {
         Command::new("sudo")
             .arg("xbps-install")
-            .arg(&vec[usize as usize].name)
+            .arg(&name)
             .status()
             .expect("failed to execute process");
-    } else if vec[usize as usize].source == Source::VoidPackages {
+    } else if package.source == Source::VoidPackages {
         //xbps-install xtools
         Command::new("sudo")
             .arg("xbps-install")
@@ -33,15 +59,16 @@ pub fn install(packages: Vec<String>) {
         if let Some(i) = std::env::var_os("HOME") {
             std::process::Command::new(format!("{}/.eivp/./xbps-src", &i.to_str().unwrap()))
                 .arg("pkg")
-                .arg(&vec[usize as usize].name)
+                .arg(&name)
                 .status()
                 .expect("failed to execute process");
-            std::env::set_current_dir(&format!("{}/.eivp/masterdir/", &i.to_str().unwrap())).unwrap();
+            std::env::set_current_dir(&format!("{}/.eivp/masterdir/", &i.to_str().unwrap()))
+                .unwrap();
             Command::new("sudo")
-            .arg("xi")
-            .arg(&vec[usize as usize].name)
-            .status()
-            .expect("failed to execute process");
+                .arg("xi")
+                .arg(&name)
+                .status()
+                .expect("failed to execute process");
         }
     }
 }

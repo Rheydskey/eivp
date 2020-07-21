@@ -176,8 +176,8 @@ fn output_void_package(packages_info: Packages) {
 pub fn query_for_install(packages_name: String) -> Vec<Packages> {
     let mut vec: Vec<Packages> = Vec::new();
     let repo_packages = get_packages_name_repo(packages_name.clone());
-    vec.push(query_info_void_package(packages_name.clone()));
-    for package in repo_packages.clone() {
+    vec.push(query_info_void_package(packages_name.to_owned()));
+    for package in repo_packages.to_owned() {
        vec.push(get_info_repo_packages(package));
     }
     vec
