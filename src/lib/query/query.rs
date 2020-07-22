@@ -165,11 +165,14 @@ fn get_info_repo_packages(packages_name: String) -> Packages {
 }
 fn output_void_package(packages_info: Packages) {
     let mut show = format!("{}-{}", packages_info.name, packages_info.version);
-    let lenght = 30 - show.len();
-    for _i in lenght + 1..29 {
-        show.push(' ');
+    if packages_info.name.trim().is_empty() && packages_info.source == Source::None {} else {
+        let lenght = 30 - show.len();
+        for _i in lenght + 1..29 {
+            show.push(' ');
+        }
+        println!("[-] {}{} (Void-Packages)", show, packages_info.short_desc);
     }
-    println!("[-] {}{} (Void-Packages)", show, packages_info.short_desc);
+
 }
 
 
