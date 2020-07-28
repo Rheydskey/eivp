@@ -3,15 +3,8 @@ use crate::lib::query::query::query_for_install;
 use runas::Command;
 use std::io::{self};
 pub fn install(packages: Vec<String>) {
-    /*if packages.len() != 0 {
-
-    */
     let vec = query_for_install(packages[0].clone());
-    let mut index: usize = 0 as usize;
-    for a in &vec {
-        println!("{} {} from {} {}", index, a.name, a.source, a.version);
-        index += 1;
-    }
+    println!("Choose a number of package (1 2 3 , 1-3)");
     let mut buffer = String::new();
     io::stdin().read_line(&mut buffer).unwrap();
     if buffer.contains("-") {
@@ -35,7 +28,6 @@ pub fn install(packages: Vec<String>) {
         }
     } else {
         std::process::Command::new("clear").status().unwrap();
-        let usize: i64 = buffer.clone().trim().parse::<i64>().unwrap();
         install_package(&vec[buffer.clone().trim().parse::<i64>().unwrap() as usize]);
     };
 }

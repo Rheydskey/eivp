@@ -6,4 +6,5 @@ pub fn update() {
             .arg("-Syu")
             .status()
             .expect("failed to execute process");
+    std::process::Command::new("");
 }
