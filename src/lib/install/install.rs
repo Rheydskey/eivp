@@ -49,15 +49,16 @@ fn install_package(package: &Packages) {
             .status()
             .expect("failed to execute process");
         if let Some(i) = std::env::var_os("HOME") {
+            let home = format!("{}/.eivp/masterdir/", &i.to_str().unwrap());
             std::process::Command::new(format!("{}/.eivp/./xbps-src", &i.to_str().unwrap()))
                 .arg("pkg")
                 .arg(&name)
                 .status()
                 .expect("failed to execute process");
-            std::env::set_current_dir(&format!("{}/.eivp/masterdir/", &i.to_str().unwrap()))
-                .unwrap();
-            Command::new("sudo")
-                .arg("xi")
+            std::env::set_current_dir(&home)
+                .is_ok();
+            println!("{}", &home);
+            std::process::Command::new("xi")
                 .arg(&name)
                 .status()
                 .expect("failed to execute process");
