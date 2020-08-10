@@ -27,7 +27,7 @@ pub fn default() {
                 .status()
                 .expect("failed to execute process");
             std::process::Command::new(format!("{}{}{}", &home,"/.eivp/", "./xbps-src")).arg("binary-bootstrap").status().expect("failed to execute process");
-            std::process::Command::new("sh").arg("-c").arg("echo").arg("XBPS_ALLOW_RESTRICTED=yes").arg(">>").arg(format!("{}{}", home, "/.eivp/etc/conf")).status().expect("Rt");
+            std::process::Command::new("sh").arg("-c").arg("echo").arg("XBPS_ALLOW_RESTRICTED=yes").arg(">>").arg(format!("{}{}", home, "/.eivp/etc/conf")).status().expect("Error");
         }
     } else {
         println!("Where is the HOME variable")
