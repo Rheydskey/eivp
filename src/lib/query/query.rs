@@ -1,9 +1,9 @@
+use crate::lib::query::qstruct::package_struct::*;
 use runas::Command;
 use std::collections::BTreeMap;
 use std::fs::read_dir;
-use std::{str, thread};
-use crate::lib::query::qstruct::package_struct::{*};
 use std::ops::Sub;
+use std::{str, thread};
 
 pub fn query(packages: Vec<String>) {
     if packages.len() != 0 {
@@ -14,8 +14,8 @@ pub fn query(packages: Vec<String>) {
             .arg(&packages[0])
             .status()
             .expect("failed to execute process");
-            get_packages_name_repo(packages[0].clone());
-            query_for_install(packages[0].clone());
+        get_packages_name_repo(packages[0].clone());
+        query_for_install(packages[0].clone());
         output_void_package(query_info_void_package(packages[0].clone()))
     } else {
         println!("Package needed")
@@ -64,7 +64,10 @@ pub fn query_info_void_package(packages: String) -> Packages {
                                     if let Some(i) = packages_info.get("maintainer") {
                                         packages.set_maintainer(i.to_owned());
                                     }
-                                    if let (Some(i), Some(e)) = (packages_info.get("version"),  packages_info.get("revision")) {
+                                    if let (Some(i), Some(e)) = (
+                                        packages_info.get("version"),
+                                        packages_info.get("revision"),
+                                    ) {
                                         packages.set_version(format!("{}_{}", i, e));
                                     }
                                     if let Some(i) = packages_info.get("archs") {
@@ -73,7 +76,7 @@ pub fn query_info_void_package(packages: String) -> Packages {
                                     if let Some(i) = packages_info.get("short_desc") {
                                         packages.set_short_desc(i.to_owned());
                                     }
-                                    return packages
+                                    return packages;
                                 }
                             }
 
@@ -99,13 +102,13 @@ pub fn get_packages_name_repo(packages_name: String) -> Vec<String> {
         .expect("failed to execute process");
     let output = str::from_utf8(command.stdout.as_ref()).unwrap();
     for sp in output.split("\n").collect::<Vec<&str>>() {
-        let s : Vec<&str> = sp.split_whitespace().collect();
+        let s: Vec<&str> = sp.split_whitespace().collect();
         if s.len() >= 1 {
             let split: Vec<&str> = s[1].split("-").collect();
             let mut name: String = "".to_string();
             for s in 0..split.len() {
                 if !split[s].contains(".") && !split[s].contains("_") {
-                      if name.len() == 0 {
+                    if name.len() == 0 {
                         name = format!("{}{}", name, split[s]);
                     } else {
                         name = format!("{}-{}", name, split[s]);
@@ -116,23 +119,20 @@ pub fn get_packages_name_repo(packages_name: String) -> Vec<String> {
                 }
             }
         }
-        
     }
     packages_info
 }
 
-
-
 fn output_void_package(packages_info: Packages) {
     let mut show = format!("{}-{}", packages_info.name, packages_info.version);
-    if packages_info.name.trim().is_empty() && packages_info.source == Source::None {} else {
+    if packages_info.name.trim().is_empty() && packages_info.source == Source::None {
+    } else {
         let lenght = 30 - show.len();
         for _i in lenght + 1..29 {
             show.push(' ');
         }
         println!("[-] {}{} (Void-Packages)", show, packages_info.short_desc);
     }
-
 }
 
 pub fn query_for_install(packages_name: String) -> Vec<Packages> {
@@ -141,19 +141,25 @@ pub fn query_for_install(packages_name: String) -> Vec<Packages> {
     let repo_packages = get_packages_name_repo(packages_name.clone());
     let void_packages = query_info_void_package(packages_name.to_owned());
     if void_packages.source != Source::None {
-        println!("{} {} from {} {}", index, void_packages.name, void_packages.source, void_packages.version);
+        println!(
+            "{} {} from {} {}",
+            index, void_packages.name, void_packages.source, void_packages.version
+        );
         index += 1;
         vec.push(void_packages);
     }
-        for package in repo_packages.to_owned() {
-            let package_info = get_info_repo_packages(package);
-            if package_info.name.is_empty() {
-                continue
-            };
-            println!("{} {} from {} {}", index, package_info.name, package_info.source, package_info.version);
-            index += 1;
-            vec.push(package_info);
-        }
+    for package in repo_packages.to_owned() {
+        let package_info = get_info_repo_packages(package);
+        if package_info.name.is_empty() {
+            continue;
+        };
+        println!(
+            "{} {} from {} {}",
+            index, package_info.name, package_info.source, package_info.version
+        );
+        index += 1;
+        vec.push(package_info);
+    }
     vec
 }
 
@@ -171,7 +177,7 @@ pub fn get_info_repo_packages(packages_name: String) -> Packages {
     let slipted: Vec<&str> = output.split("\n").collect();
     for sp in slipted {
         let sps = sp.to_string();
-        let mut lenght :usize = 0 as usize;
+        let mut lenght: usize = 0 as usize;
         let split: Vec<&str> = sps.split(":").collect();
         lenght = split.len();
         for i in &split {
@@ -191,7 +197,7 @@ pub fn get_info_repo_packages(packages_name: String) -> Packages {
         packages.set_maintainer(i.trim_start().to_string());
     }
     if let Some(i) = packages_info.get("pkgver") {
-        let split:Vec<&str> = i.split("-").collect();
+        let split: Vec<&str> = i.split("-").collect();
         for s in 0..split.len() {
             if split[s].contains(".") && split[s].contains("_") {
                 packages.set_version(split[s].to_string());
@@ -206,5 +212,3 @@ pub fn get_info_repo_packages(packages_name: String) -> Packages {
     }
     packages
 }
-
-

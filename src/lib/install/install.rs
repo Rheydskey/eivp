@@ -11,16 +11,17 @@ pub fn install(packages: Vec<String>) {
         let split: Vec<&str> = buffer.split("-").collect();
         println!("{}", split.len());
         if split.len() == 2 {
-            for d in (split[0].clone().trim().parse::<i64>().unwrap() as usize)..(split[1].clone().trim().parse::<i64>().unwrap() as usize) {
+            for d in (split[0].clone().trim().parse::<i64>().unwrap() as usize)
+                ..(split[1].clone().trim().parse::<i64>().unwrap() as usize)
+            {
                 install_package(&vec[d as usize]);
             }
         } else {
             println!("too many or too few arguments")
         }
-
     } else if buffer.contains(" ") {
         let split: Vec<&str> = buffer.split(" ").collect();
-        for f in 0..split.len(){
+        for f in 0..split.len() {
             if !split[f].trim().is_empty() {
                 let n = &vec[split[f].clone().trim().parse::<i64>().unwrap() as usize];
                 install_package(n);
@@ -32,7 +33,7 @@ pub fn install(packages: Vec<String>) {
     };
 }
 
-fn install_package(package: &Packages) {
+pub fn install_package(package: &Packages) {
     println!("I'll install {}", package.name);
     let name = package.name.clone();
     if package.source == Source::Repo {
@@ -55,8 +56,7 @@ fn install_package(package: &Packages) {
                 .arg(&name)
                 .status()
                 .expect("failed to execute process");
-            std::env::set_current_dir(&home)
-                .is_ok();
+            std::env::set_current_dir(&home).is_ok();
             println!("{}", &home);
             std::process::Command::new("xi")
                 .arg(&name)

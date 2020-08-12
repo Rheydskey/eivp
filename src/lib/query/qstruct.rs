@@ -11,7 +11,7 @@ pub mod package_struct {
             match *self {
                 Source::Repo => write!(f, "Repository"),
                 Source::VoidPackages => write!(f, "Void Packages"),
-                Source::None => write!(f, "anywhere")
+                Source::None => write!(f, "anywhere"),
             }
         }
     }
@@ -20,7 +20,7 @@ pub mod package_struct {
         pub name: String,       // PkgName
         pub version: String,    // X.X.X_Y X = Version, Y = Revision
         pub arch: String,       //Archicture or Archs
-        pub maintainer: String,  // maintainer
+        pub maintainer: String, // maintainer
         pub short_desc: String, // short_desc
         pub source: Source,     // Void_Packages or Repo
     }
