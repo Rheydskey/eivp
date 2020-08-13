@@ -2,8 +2,7 @@ use crate::lib::query::qstruct::package_struct::*;
 use runas::Command;
 use std::collections::BTreeMap;
 use std::fs::read_dir;
-use std::ops::Sub;
-use std::{str, thread};
+use std::str;
 
 pub fn query(packages: Vec<String>) {
     if packages.len() != 0 {
@@ -177,17 +176,12 @@ pub fn get_info_repo_packages(packages_name: String) -> Packages {
     let slipted: Vec<&str> = output.split("\n").collect();
     for sp in slipted {
         let sps = sp.to_string();
-        let mut lenght: usize = 0 as usize;
         let split: Vec<&str> = sps.split(":").collect();
-        lenght = split.len();
-        for i in &split {
-            i.to_string().replace("\t", "");
-        }
+        let lenght: usize =  split.len();
         if lenght == 2 {
             packages_info.insert(split[0].to_string(), split[1].to_string());
         }
     }
-
     let mut packages: Packages = Packages::new();
     packages.set_source(Source::Repo);
     if let Some(i) = packages_info.get("pkgname") {

@@ -56,7 +56,7 @@ pub fn install_package(package: &Packages) {
                 .arg(&name)
                 .status()
                 .expect("failed to execute process");
-            std::env::set_current_dir(&home).is_ok();
+            std::env::set_current_dir(&home).unwrap();
             println!("{}", &home);
             std::process::Command::new("xi")
                 .arg(&name)
