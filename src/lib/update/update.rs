@@ -24,7 +24,7 @@ fn check_update() {
     if let Some(i) = std::env::var_os("HOME") {
         let mut packages_to_update : Vec<String> = Vec::new();
         let command = std::process::Command::new(format!("{}{}", i.to_str().unwrap(), "/.eivp/./xbps-src"))
-            .arg("show-repo-updates")
+            .arg("show-sys-updates")
             .output()
             .expect("failed to execute process");
         let output = std::str::from_utf8(command.stdout.as_ref()).unwrap();
