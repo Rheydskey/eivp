@@ -3,34 +3,38 @@ use crate::lib::query::query::query_for_install;
 use runas::Command;
 use std::io::{self};
 pub fn install(packages: Vec<String>) {
-    let vec = query_for_install(packages[0].clone());
-    println!("Choose a number of package (1 2 3 , 1-3)");
-    let mut buffer = String::new();
-    io::stdin().read_line(&mut buffer).unwrap();
-    if buffer.contains("-") {
-        let split: Vec<&str> = buffer.split("-").collect();
-        println!("{}", split.len());
-        if split.len() == 2 {
-            for d in (split[0].clone().trim().parse::<i64>().unwrap() as usize)
-                ..(split[1].clone().trim().parse::<i64>().unwrap() as usize)
-            {
-                install_package(&vec[d as usize]);
+    if packages.is_empty() {
+        println!("No package name provied")
+    } else {
+        let vec = query_for_install(packages[0].clone());
+        println!("Choose a number of package (1 2 3 , 1-3)");
+        let mut buffer = String::new();
+        io::stdin().read_line(&mut buffer).unwrap();
+        if buffer.contains("-") {
+            let split: Vec<&str> = buffer.split("-").collect();
+            println!("{}", split.len());
+            if split.len() == 2 {
+                for d in (split[0].clone().trim().parse::<i64>().unwrap() as usize)
+                    ..(split[1].clone().trim().parse::<i64>().unwrap() as usize)
+                {
+                    install_package(&vec[d as usize]);
+                }
+            } else {
+                println!("too many or too few arguments")
+            }
+        } else if buffer.contains(" ") {
+            let split: Vec<&str> = buffer.split(" ").collect();
+            for f in 0..split.len() {
+                if !split[f].trim().is_empty() {
+                    let n = &vec[split[f].clone().trim().parse::<i64>().unwrap() as usize];
+                    install_package(n);
+                }
             }
         } else {
-            println!("too many or too few arguments")
-        }
-    } else if buffer.contains(" ") {
-        let split: Vec<&str> = buffer.split(" ").collect();
-        for f in 0..split.len() {
-            if !split[f].trim().is_empty() {
-                let n = &vec[split[f].clone().trim().parse::<i64>().unwrap() as usize];
-                install_package(n);
-            }
-        }
-    } else {
-        std::process::Command::new("clear").status().unwrap();
-        install_package(&vec[buffer.clone().trim().parse::<i64>().unwrap() as usize]);
-    };
+            std::process::Command::new("clear").status().unwrap();
+            install_package(&vec[buffer.clone().trim().parse::<i64>().unwrap() as usize]);
+        };
+    }
 }
 
 pub fn install_package(package: &Packages) {
