@@ -1,5 +1,6 @@
 use std::fs::read_dir;
 use std::process::Command;
+use std::io::Write;
 
 pub fn default() {
     if let Some(i) = std::env::var_os("HOME") {
@@ -32,15 +33,8 @@ pub fn default() {
                 .arg("binary-bootstrap")
                 .status()
                 .expect("failed to execute process");
-            std::process::Command::new("sh")
-                .arg("-c")
-                .arg("echo")
-                .arg("XBPS_ALLOW_RESTRICTED=yes")
-                .arg(">>")
-                .arg(format!("{}{}", home, "/.eivp/etc/conf"))
-                .status()
-                .expect("Error");
         }
+        std::fs::File::create(format!("{}{}", home, "/.eivp/etc/conf")).expect("Error").write(String::from("XBPS_ALLOW_RESTRICTED=yes").as_bytes()).expect("Error");
     } else {
         println!("Where is the HOME variable")
     }
