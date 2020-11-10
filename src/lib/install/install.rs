@@ -2,6 +2,7 @@ use crate::lib::query::qstruct::package_struct::{Packages, Source};
 use crate::lib::query::query::query_for_install;
 use runas::Command;
 use std::io::{self};
+
 pub fn install(packages: Vec<String>) {
     if packages.is_empty() {
         println!("No package name provied")
