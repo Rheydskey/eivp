@@ -1,6 +1,5 @@
 use crate::lib::query::qstruct::package_struct::*;
 use runas::Command;
-use std::collections::BTreeMap;
 use std::fs::read_dir;
 use std::str;
 
@@ -25,7 +24,6 @@ pub fn query_info_void_package(packages: String) -> Packages {
     // Get the home variable
     if let Some(i) = std::env::var_os("HOME") {
         let home = i.to_str().unwrap();
-        let mut packages_info: BTreeMap<String, String> = BTreeMap::new();
         // Search packages into script
         match read_dir(format!("{}{}", home, "/.eivp/srcpkgs/")) {
             Ok(o) => {
@@ -45,40 +43,40 @@ pub fn query_info_void_package(packages: String) -> Packages {
 
                                     let output = str::from_utf8(command.stdout.as_ref()).unwrap();
                                     let slipted: Vec<&str> = output.split("\n").collect();
+                                    let mut packages: Packages = Packages::new();
                                     for sp in slipted {
                                         let split = sp
                                             .split(":")
                                             .map(|c| c.replace("\t", ""))
                                             .collect::<Vec<String>>();
                                         if split.len() == 2 {
-                                            packages_info
-                                                .insert(split[0].clone(), split[1].clone());
+                                            match split[0].as_str() {
+                                                "pkgname" => {
+                                                    packages.set_name(split[1].clone());
+                                                },
+                                                "maintainer" => {
+                                                    packages.set_maintainer(split[1].clone());
+                                                },
+                                                "version" => {
+                                                    packages.set_version(split[1].clone());
+                                                },
+                                                "revision" => {
+                                                    packages.set_subversion(split[1].clone());
+                                                },
+                                                "archs" => {
+                                                    packages.set_arch(split[1].clone());
+                                                },
+                                                "short_desc" => {
+                                                    packages.set_short_desc(split[1].clone());
+                                                },
+                                                _ => {}
+                                            }
                                         }
                                     }
-                                    let mut packages: Packages = Packages::new();
                                     packages.set_source(Source::VoidPackages);
-                                    if let Some(i) = packages_info.get("pkgname") {
-                                        packages.set_name(i.to_owned());
-                                    }
-                                    if let Some(i) = packages_info.get("maintainer") {
-                                        packages.set_maintainer(i.to_owned());
-                                    }
-                                    if let (Some(i), Some(e)) = (
-                                        packages_info.get("version"),
-                                        packages_info.get("revision"),
-                                    ) {
-                                        packages.set_version(format!("{}_{}", i, e));
-                                    }
-                                    if let Some(i) = packages_info.get("archs") {
-                                        packages.set_arch(i.to_owned());
-                                    }
-                                    if let Some(i) = packages_info.get("short_desc") {
-                                        packages.set_short_desc(i.to_owned());
-                                    }
                                     return packages;
                                 }
                             }
-
                             Err(_e) => {}
                         },
                         Err(_e) => {}
@@ -91,31 +89,51 @@ pub fn query_info_void_package(packages: String) -> Packages {
     Packages::new()
 }
 
-pub fn get_packages_name_repo(packages_name: String) -> Vec<String> {
-    let mut packages_info: Vec<String> = Vec::new();
+pub fn get_packages_name_repo(packages_name: String) -> Vec<Packages> {
+
     let command = std::process::Command::new("xbps-query")
         .arg("-R")
         .arg("-s")
         .arg(packages_name)
         .output()
         .expect("failed to execute process");
+
     let output = str::from_utf8(command.stdout.as_ref()).unwrap();
+
+    let mut packages : Vec<Packages> = Vec::new();
+
     for sp in output.split("\n").collect::<Vec<&str>>() {
+        let mut pkg = Packages::new();
+
         let s: Vec<&str> = sp.split_whitespace().collect();
         if s.len() >= 1 {
             let split: Vec<&str> = s[1].split("-").collect();
             let mut name: String = "".to_string();
             for s in 0..split.len() {
-                if !split[s].contains(".") && !split[s].contains("_") {
-                        name = format!("{}-{}", name, split[s]);
+                if split[s].contains(".") && split[s].contains("_") {
+                    let s = split[s].split("_").collect::<Vec<&str>>();
+                    pkg.set_subversion(s[1].to_string());
+                    pkg.set_version(s[0].to_string());
                 } else {
-                    packages_info.push(name);
-                    break;
+                    if !split[s].is_empty() {
+                        if !name.is_empty() {
+                            name.push_str(format!("-{}", split[s].clone()).as_str());
+                        } else {
+                            name.push_str(split[s]);
+                        }
+                    }
+
                 }
             }
+            pkg.set_source(Source::Repo);
+            pkg.set_name(name);
         }
+        if !pkg.name.is_empty() {
+            packages.push(pkg);
+        }
+
     }
-    packages_info
+    packages
 }
 
 fn output_void_package(packages_info: Packages) {
@@ -143,23 +161,19 @@ pub fn query_for_install(packages_name: String) -> Vec<Packages> {
         index += 1;
         vec.push(void_packages);
     }
-    for package in repo_packages.to_owned() {
-        let package_info = get_info_repo_packages(package);
-        if package_info.name.is_empty() {
-            continue;
-        };
+
+    for package in repo_packages {
         println!(
             "{} {} from {} {}",
-            index, package_info.name, package_info.source, package_info.version
+            index, package.name, package.source, package.version
         );
         index += 1;
-        vec.push(package_info);
+
     }
     vec
 }
 
 pub fn get_info_repo_packages(packages_name: String) -> Packages {
-    let mut packages_info: BTreeMap<String, String> = BTreeMap::new();
     // Search packages into script
     let command = std::process::Command::new("xbps-query")
         .arg("-R")
@@ -168,37 +182,38 @@ pub fn get_info_repo_packages(packages_name: String) -> Packages {
         .output()
         .expect("failed to execute process");
 
+    let mut packages: Packages = Packages::new();
+    packages.set_source(Source::Repo);
     let output = String::from(str::from_utf8(command.stdout.as_ref()).unwrap());
     let slipted: Vec<&str> = output.split("\n").collect();
     for sp in slipted {
         let sps = sp.to_string();
         let split: Vec<&str> = sps.split(":").collect();
-        let lenght: usize =  split.len();
-        if lenght == 2 {
-            packages_info.insert(split[0].to_string(), split[1].to_string());
-        }
-    }
-    let mut packages: Packages = Packages::new();
-    packages.set_source(Source::Repo);
-    if let Some(i) = packages_info.get("pkgname") {
-        packages.set_name(i.to_owned().replace(" ", ""));
-    }
-    if let Some(i) = packages_info.get("maintainer") {
-        packages.set_maintainer(i.trim_start().to_string());
-    }
-    if let Some(i) = packages_info.get("pkgver") {
-        let split: Vec<&str> = i.split("-").collect();
-        for s in 0..split.len() {
-            if split[s].contains(".") && split[s].contains("_") {
-                packages.set_version(split[s].to_string());
+        if split.len() == 2 {
+            match split[0] {
+                "pkgname" => {
+                    packages.set_name(split[1].to_string().to_owned().replace(" ", ""));
+                },
+                "maintainer" => {
+                    packages.set_maintainer(split[1].to_string().trim_start().to_string());
+                },
+                "pkgver" => {
+                    let split_version: Vec<&str> = split[1].split("-").collect();
+                    for s in 0..split_version.len() {
+                        if split_version[s].contains(".") && split_version[s].contains("_") {
+                            packages.set_version(split_version[s].to_string());
+                        }
+                    }
+                },
+                "architecture" => {
+                    packages.set_arch(split[1].to_string().trim_start().to_string());
+                },
+                "short_desc" => {
+                    packages.set_short_desc(split[1].to_string().trim_start().to_string());
+                },
+                _ => {}
             }
         }
-    }
-    if let Some(i) = packages_info.get("architecture") {
-        packages.set_arch(i.trim_start().to_string());
-    }
-    if let Some(i) = packages_info.get("short_desc") {
-        packages.set_short_desc(i.trim_start().to_string());
     }
     packages
 }
