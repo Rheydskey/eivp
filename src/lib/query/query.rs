@@ -107,11 +107,7 @@ pub fn get_packages_name_repo(packages_name: String) -> Vec<String> {
             let mut name: String = "".to_string();
             for s in 0..split.len() {
                 if !split[s].contains(".") && !split[s].contains("_") {
-                    if name.len() == 0 {
-                        name = format!("{}{}", name, split[s]);
-                    } else {
                         name = format!("{}-{}", name, split[s]);
-                    }
                 } else {
                     packages_info.push(name);
                     break;
