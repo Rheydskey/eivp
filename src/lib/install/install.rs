@@ -9,32 +9,42 @@ pub fn install(packages: Vec<String>) {
     } else {
         let vec = query_for_install(packages[0].clone());
         println!("Choose a number of package (1 2 3 , 1-3)");
-        let mut buffer = String::new();
-        io::stdin().read_line(&mut buffer).unwrap();
-        if buffer.contains("-") {
-            let split: Vec<&str> = buffer.split("-").collect();
-            println!("{}", split.len());
-            if split.len() == 2 {
-                for d in (split[0].clone().trim().parse::<i64>().unwrap() as usize)
-                    ..(split[1].clone().trim().parse::<i64>().unwrap() as usize)
-                {
-                    install_package(&vec[d as usize]);
+        loop {
+            let mut buffer = String::new();
+            io::stdin().read_line(&mut buffer).unwrap();
+            if buffer.contains("-") {
+                let split: Vec<&str> = buffer.split("-").collect();
+                println!("{}", split.len());
+                if split.len() == 2 {
+                    for d in (split[0].clone().trim().parse::<i64>().unwrap() as usize)
+                        ..(split[1].clone().trim().parse::<i64>().unwrap() as usize)
+                    {
+                        install_package(&vec[(vec.len()-1) - d as usize]);
+                        break;
+                    }
+                } else {
+                    println!("too many or too few arguments")
+                }
+            } else if buffer.contains(" ") {
+                let split: Vec<&str> = buffer.split(" ").collect();
+                for f in 0..split.len() {
+                    if !split[f].trim().is_empty() {
+                        let n = &vec[(vec.len()-1) - split[f].clone().trim().parse::<i64>().unwrap() as usize];
+                        install_package(n);
+                        break;
+                    }
                 }
             } else {
-                println!("too many or too few arguments")
-            }
-        } else if buffer.contains(" ") {
-            let split: Vec<&str> = buffer.split(" ").collect();
-            for f in 0..split.len() {
-                if !split[f].trim().is_empty() {
-                    let n = &vec[split[f].clone().trim().parse::<i64>().unwrap() as usize];
-                    install_package(n);
+                let index = buffer.clone().trim().parse::<i64>().unwrap() as usize;
+                if  vec.len() >= index {
+                    std::process::Command::new("clear").status().unwrap();
+                    install_package(&vec[(vec.len()-1) - index]);
+                    break;
+                } else {
+                    println!("the number entered is incorrect, retry !")
                 }
-            }
-        } else {
-            std::process::Command::new("clear").status().unwrap();
-            install_package(&vec[buffer.clone().trim().parse::<i64>().unwrap() as usize]);
-        };
+            };
+        }
     }
 }
 
