@@ -4,7 +4,6 @@ use crate::lib::install::install;
 use crate::lib::query::query;
 use crate::lib::remove::remove;
 use crate::lib::update::update;
-use async_std::task;
 use structopt::StructOpt;
 
 #[derive(StructOpt, Debug)]
