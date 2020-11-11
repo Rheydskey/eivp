@@ -165,6 +165,7 @@ pub fn query_for_install(packages_name: String) -> Vec<Packages> {
             index, package.name, package.source, package.version
         );
         index += 1;
+        vec.push(package);
     }
     vec
 }
