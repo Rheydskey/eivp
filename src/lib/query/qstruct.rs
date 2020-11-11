@@ -41,7 +41,7 @@ pub mod package_struct {
             self.name = name;
             self
         }
-        pub fn set_version(&mut self, version: String) -> &mut Packages{
+        pub fn set_version(&mut self, version: String) -> &mut Packages {
             self.version = version;
             self
         }

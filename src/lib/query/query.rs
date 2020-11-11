@@ -53,22 +53,22 @@ pub fn query_info_void_package(packages: String) -> Packages {
                                             match split[0].as_str() {
                                                 "pkgname" => {
                                                     packages.set_name(split[1].clone());
-                                                },
+                                                }
                                                 "maintainer" => {
                                                     packages.set_maintainer(split[1].clone());
-                                                },
+                                                }
                                                 "version" => {
                                                     packages.set_version(split[1].clone());
-                                                },
+                                                }
                                                 "revision" => {
                                                     packages.set_subversion(split[1].clone());
-                                                },
+                                                }
                                                 "archs" => {
                                                     packages.set_arch(split[1].clone());
-                                                },
+                                                }
                                                 "short_desc" => {
                                                     packages.set_short_desc(split[1].clone());
-                                                },
+                                                }
                                                 _ => {}
                                             }
                                         }
@@ -90,7 +90,6 @@ pub fn query_info_void_package(packages: String) -> Packages {
 }
 
 pub fn get_packages_name_repo(packages_name: String) -> Vec<Packages> {
-
     let command = std::process::Command::new("xbps-query")
         .arg("-R")
         .arg("-s")
@@ -100,7 +99,7 @@ pub fn get_packages_name_repo(packages_name: String) -> Vec<Packages> {
 
     let output = str::from_utf8(command.stdout.as_ref()).unwrap();
 
-    let mut packages : Vec<Packages> = Vec::new();
+    let mut packages: Vec<Packages> = Vec::new();
 
     for sp in output.split("\n").collect::<Vec<&str>>() {
         let mut pkg = Packages::new();
@@ -122,7 +121,6 @@ pub fn get_packages_name_repo(packages_name: String) -> Vec<Packages> {
                             name.push_str(split[s]);
                         }
                     }
-
                 }
             }
             pkg.set_source(Source::Repo);
@@ -131,7 +129,6 @@ pub fn get_packages_name_repo(packages_name: String) -> Vec<Packages> {
         if !pkg.name.is_empty() {
             packages.push(pkg);
         }
-
     }
     packages
 }
@@ -168,7 +165,6 @@ pub fn query_for_install(packages_name: String) -> Vec<Packages> {
             index, package.name, package.source, package.version
         );
         index += 1;
-
     }
     vec
 }
@@ -193,10 +189,10 @@ pub fn get_info_repo_packages(packages_name: String) -> Packages {
             match split[0] {
                 "pkgname" => {
                     packages.set_name(split[1].to_string().to_owned().replace(" ", ""));
-                },
+                }
                 "maintainer" => {
                     packages.set_maintainer(split[1].to_string().trim_start().to_string());
-                },
+                }
                 "pkgver" => {
                     let split_version: Vec<&str> = split[1].split("-").collect();
                     for s in 0..split_version.len() {
@@ -204,13 +200,13 @@ pub fn get_info_repo_packages(packages_name: String) -> Packages {
                             packages.set_version(split_version[s].to_string());
                         }
                     }
-                },
+                }
                 "architecture" => {
                     packages.set_arch(split[1].to_string().trim_start().to_string());
-                },
+                }
                 "short_desc" => {
                     packages.set_short_desc(split[1].to_string().trim_start().to_string());
-                },
+                }
                 _ => {}
             }
         }

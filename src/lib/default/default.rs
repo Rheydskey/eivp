@@ -1,6 +1,6 @@
 use std::fs::read_dir;
-use std::process::Command;
 use std::io::Write;
+use std::process::Command;
 
 pub fn default() {
     if let Some(i) = std::env::var_os("HOME") {
@@ -34,7 +34,10 @@ pub fn default() {
                 .status()
                 .expect("failed to execute process");
         }
-        std::fs::File::create(format!("{}{}", home, "/.eivp/etc/conf")).expect("Error").write(String::from("XBPS_ALLOW_RESTRICTED=yes").as_bytes()).expect("Error");
+        std::fs::File::create(format!("{}{}", home, "/.eivp/etc/conf"))
+            .expect("Error")
+            .write(String::from("XBPS_ALLOW_RESTRICTED=yes").as_bytes())
+            .expect("Error");
     } else {
         println!("Where is the HOME variable")
     }
