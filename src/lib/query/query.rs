@@ -14,12 +14,11 @@ pub fn query(packages: Vec<String>) {
             .expect("failed to execute process");
         get_packages_name_repo(packages[0].clone());
         query_for_install(packages[0].clone());
-        output_void_package(query_info_void_package(packages[0].clone()))
+        output_void_package(get_list_void_package(packages[0].clone()))
     } else {
         println!("Package needed")
     }
 }
-
 pub fn query_info_void_package(packages: String) -> Packages {
     // Get the home variable
     if let Some(i) = std::env::var_os("HOME") {
@@ -31,7 +30,76 @@ pub fn query_info_void_package(packages: String) -> Packages {
                     match epath {
                         Ok(e) => match e.file_name().into_string() {
                             Ok(e) => {
-                                if packages == e {
+                                if e == packages {
+                                    let command = std::process::Command::new(format!(
+                                        "{}{}",
+                                        home, "/.eivp/./xbps-src"
+                                    ))
+                                        .arg("show")
+                                        .arg(&e)
+                                        .output()
+                                        .expect("failed to execute process");
+
+                                    let output = str::from_utf8(command.stdout.as_ref()).unwrap();
+                                    let slipted: Vec<&str> = output.split("\n").collect();
+                                    let mut packages: Packages = Packages::new();
+                                    for sp in slipted {
+                                        let split = sp
+                                            .split(":")
+                                            .map(|c| c.replace("\t", ""))
+                                            .collect::<Vec<String>>();
+                                        if split.len() == 2 {
+                                            match split[0].as_str() {
+                                                "pkgname" => {
+                                                    packages.set_name(split[1].clone());
+                                                }
+                                                "maintainer" => {
+                                                    packages.set_maintainer(split[1].clone());
+                                                }
+                                                "version" => {
+                                                    packages.set_version(split[1].clone());
+                                                }
+                                                "revision" => {
+                                                    packages.set_subversion(split[1].clone());
+                                                }
+                                                "archs" => {
+                                                    packages.set_arch(split[1].clone());
+                                                }
+                                                "short_desc" => {
+                                                    packages.set_short_desc(split[1].clone());
+                                                }
+                                                _ => {}
+                                            }
+                                        }
+                                    }
+                                    packages.set_source(Source::VoidPackages);
+                                    return packages;
+                                };
+                            }
+                            Err(_e) => {}
+                        },
+                        Err(_e) => {}
+                    }
+                }
+            }
+            Err(_e) => {}
+        };
+    }
+    Packages::new()
+}
+pub fn get_list_void_package(packages: String) -> Vec<Packages> {
+    let mut vec_package: Vec<Packages> = Vec::new();
+    // Get the home variable
+    if let Some(i) = std::env::var_os("HOME") {
+        let home = i.to_str().unwrap();
+        // Search packages into script
+        match read_dir(format!("{}{}", home, "/.eivp/srcpkgs/")) {
+            Ok(o) => {
+                for epath in o {
+                    match epath {
+                        Ok(e) => match e.file_name().into_string() {
+                            Ok(e) => {
+                                if e.contains(&packages.clone()) {
                                     let command = std::process::Command::new(format!(
                                         "{}{}",
                                         home, "/.eivp/./xbps-src"
@@ -74,8 +142,8 @@ pub fn query_info_void_package(packages: String) -> Packages {
                                         }
                                     }
                                     packages.set_source(Source::VoidPackages);
-                                    return packages;
-                                }
+                                    vec_package.push(packages);
+                                };
                             }
                             Err(_e) => {}
                         },
@@ -86,7 +154,7 @@ pub fn query_info_void_package(packages: String) -> Packages {
             Err(_e) => {}
         };
     }
-    Packages::new()
+    vec_package
 }
 
 pub fn get_packages_name_repo(packages_name: String) -> Vec<Packages> {
@@ -133,7 +201,8 @@ pub fn get_packages_name_repo(packages_name: String) -> Vec<Packages> {
     packages
 }
 
-fn output_void_package(packages_info: Packages) {
+fn output_void_package(packages: Vec<Packages>) {
+    for packages_info in packages {
     let mut show = format!("{}-{}", packages_info.name, packages_info.version);
     if packages_info.name.trim().is_empty() && packages_info.source == Source::None {
     } else {
@@ -143,28 +212,32 @@ fn output_void_package(packages_info: Packages) {
         }
         println!("[-] {}{} (Void-Packages)", show, packages_info.short_desc);
     }
+    }
 }
 
 pub fn query_for_install(packages_name: String) -> Vec<Packages> {
     let mut vec: Vec<Packages> = Vec::new();
-    let mut index: usize = 0 as usize;
     let repo_packages = get_packages_name_repo(packages_name.clone());
-    let void_packages = query_info_void_package(packages_name.to_owned());
-    if void_packages.source != Source::None {
-        println!(
-            "{} {} from {} {}",
-            index, void_packages.name, void_packages.source, void_packages.version
-        );
-        index += 1;
-        vec.push(void_packages);
+    let void_packages = get_list_void_package(packages_name.to_owned());
+    let mut lenght = void_packages.len() + repo_packages.len() - 1;
+
+    for vpkg in void_packages {
+        if vpkg.source == Source::VoidPackages {
+            println!(
+                "{} {} from {} {}",
+                lenght, vpkg.name, vpkg.source, vpkg.version
+            );
+            lenght -= 1;
+            vec.push(vpkg);
+        }
     }
 
     for package in repo_packages {
         println!(
             "{} {} from {} {}",
-            index, package.name, package.source, package.version
+            lenght, package.name, package.source, package.version
         );
-        index += 1;
+        lenght -= 1;
         vec.push(package);
     }
     vec
