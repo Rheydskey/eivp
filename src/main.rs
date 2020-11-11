@@ -29,17 +29,13 @@ enum Opt {
     Update {},
 }
 fn main() {
-    task::block_on(task::spawn(async {
-            default::default();
-            match Opt::from_args() {
-                Opt::Install { package_name } => {
-                    install::install(package_name);
-                }
-                Opt::Query { package_name } => query::query(package_name),
-                Opt::Remove { package_name } => remove::remove(package_name),
-                Opt::Update {} => update::update(),
-            }
+    default::default();
+    match Opt::from_args() {
+        Opt::Install { package_name } => {
+            install::install(package_name);
         }
-    ));
-
+        Opt::Query { package_name } => query::query(package_name),
+        Opt::Remove { package_name } => remove::remove(package_name),
+        Opt::Update {} => update::update(),
+    }
 }
