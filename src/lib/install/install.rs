@@ -19,7 +19,7 @@ pub fn install(packages: Vec<String>) {
                     for d in (split[0].clone().trim().parse::<i64>().unwrap() as usize)
                         ..(split[1].clone().trim().parse::<i64>().unwrap() as usize)
                     {
-                        install_package(&vec[(vec.len()-1) - d as usize]);
+                        install_package(&vec[(vec.len() - 1) - d as usize]);
                         break;
                     }
                 } else {
@@ -29,16 +29,17 @@ pub fn install(packages: Vec<String>) {
                 let split: Vec<&str> = buffer.split(" ").collect();
                 for f in 0..split.len() {
                     if !split[f].trim().is_empty() {
-                        let n = &vec[(vec.len()-1) - split[f].clone().trim().parse::<i64>().unwrap() as usize];
+                        let n = &vec[(vec.len() - 1)
+                            - split[f].clone().trim().parse::<i64>().unwrap() as usize];
                         install_package(n);
                         break;
                     }
                 }
             } else {
                 let index = buffer.clone().trim().parse::<i64>().unwrap() as usize;
-                if  vec.len() >= index {
+                if vec.len() >= index {
                     std::process::Command::new("clear").status().unwrap();
-                    install_package(&vec[(vec.len()-1) - index]);
+                    install_package(&vec[(vec.len() - 1) - index]);
                     break;
                 } else {
                     println!("the number entered is incorrect, retry !")

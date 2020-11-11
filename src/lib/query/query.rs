@@ -35,10 +35,10 @@ pub fn query_info_void_package(packages: String) -> Packages {
                                         "{}{}",
                                         home, "/.eivp/./xbps-src"
                                     ))
-                                        .arg("show")
-                                        .arg(&e)
-                                        .output()
-                                        .expect("failed to execute process");
+                                    .arg("show")
+                                    .arg(&e)
+                                    .output()
+                                    .expect("failed to execute process");
 
                                     let output = str::from_utf8(command.stdout.as_ref()).unwrap();
                                     let slipted: Vec<&str> = output.split("\n").collect();
@@ -203,15 +203,15 @@ pub fn get_packages_name_repo(packages_name: String) -> Vec<Packages> {
 
 fn output_void_package(packages: Vec<Packages>) {
     for packages_info in packages {
-    let mut show = format!("{}-{}", packages_info.name, packages_info.version);
-    if packages_info.name.trim().is_empty() && packages_info.source == Source::None {
-    } else {
-        let lenght = 30 - show.len();
-        for _i in lenght + 1..29 {
-            show.push(' ');
+        let mut show = format!("{}-{}", packages_info.name, packages_info.version);
+        if packages_info.name.trim().is_empty() && packages_info.source == Source::None {
+        } else {
+            let lenght = 30 - show.len();
+            for _i in lenght + 1..29 {
+                show.push(' ');
+            }
+            println!("[-] {}{} (Void-Packages)", show, packages_info.short_desc);
         }
-        println!("[-] {}{} (Void-Packages)", show, packages_info.short_desc);
-    }
     }
 }
 
