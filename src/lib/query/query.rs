@@ -216,30 +216,43 @@ fn output_void_package(packages: Vec<Packages>) {
 }
 
 pub fn query_for_install(packages_name: String) -> Vec<Packages> {
-    let mut vec: Vec<Packages> = Vec::new();
-    let repo_packages = get_packages_name_repo(packages_name.clone());
-    let void_packages = get_list_void_package(packages_name.to_owned());
-    let mut lenght = void_packages.len() + repo_packages.len() - 1;
 
-    for vpkg in void_packages {
+    let packages = remove_void_package_if_repo(get_list_void_package(packages_name.to_owned()), get_packages_name_repo(packages_name.clone()));
+    let mut lenght = packages.len() - 1;
+    for vpkg in &packages {
         if vpkg.source == Source::VoidPackages {
             println!(
                 "{} {} from {} {}",
                 lenght, vpkg.name, vpkg.source, vpkg.version
             );
-            lenght -= 1;
-            vec.push(vpkg);
+        } else if vpkg.source == Source::Repo {
+            println!(
+                "{} {} from {} {}",
+                lenght, vpkg.name, vpkg.source, vpkg.version
+            );
         }
+        lenght -= 1;
     }
 
-    for package in repo_packages {
-        println!(
-            "{} {} from {} {}",
-            lenght, package.name, package.source, package.version
-        );
-        lenght -= 1;
-        vec.push(package);
+    packages
+}
+pub fn remove_void_package_if_repo(void_package: Vec<Packages>, mut repo_package: Vec<Packages>) -> Vec<Packages> {
+    let mut vec: Vec<Packages> = Vec::new();
+    for vpkg in void_package.clone() {
+        let mut lenght = 0;
+        for i in 0..repo_package.len() {
+            if vpkg.name == repo_package[i].name {
+                break
+            } else {
+                if lenght == repo_package.len()-1 {
+                    vec.push(vpkg.clone());
+                    break;
+                }
+            }
+            lenght += 1;
+        }
     }
+    vec.append(&mut repo_package);
     vec
 }
 

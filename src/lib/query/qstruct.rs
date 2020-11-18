@@ -1,6 +1,6 @@
 pub mod package_struct {
     use std::fmt;
-    #[derive(Debug, PartialEq)]
+    #[derive(Debug, Clone, PartialEq)]
     pub enum Source {
         Repo,
         VoidPackages,
@@ -15,7 +15,7 @@ pub mod package_struct {
             }
         }
     }
-    #[derive(Debug)]
+    #[derive(Debug, Clone)]
     pub struct Packages {
         pub name: String,       // PkgName
         pub version: String,    // X.X.X
@@ -25,6 +25,7 @@ pub mod package_struct {
         pub short_desc: String, // short_desc
         pub source: Source,     // Void_Packages or Repo
     }
+
     impl Packages {
         pub fn new() -> Packages {
             Packages {
