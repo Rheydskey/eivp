@@ -7,7 +7,7 @@ edition = "2018"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-structopt = "0.3.15"
+structopt = "0.3.20"
 runas = "0.2.1"
 
 [profile.release]
