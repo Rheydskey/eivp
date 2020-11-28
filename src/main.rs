@@ -7,7 +7,13 @@ use crate::lib::update::update;
 use structopt::StructOpt;
 
 #[derive(StructOpt, Debug)]
-#[structopt(name = "A easily installer for void packages", version = "0.0.1")]
+#[structopt(name = r"
+___ _____   _____ 
+| __|_ _\ \ / / _ \
+| _| | | \ V /|  _/
+|___|___| \_/ |_|  
+                  
+", about="A easily installer for void packages", version = "\nv2.0.0")]
 enum Opt {
     /// Install a package
     Install {
