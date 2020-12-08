@@ -220,7 +220,7 @@ pub fn query_for_install(packages_name: String) -> Vec<Packages> {
         get_list_void_package(packages_name.to_owned()),
         get_packages_name_repo(packages_name.clone()),
     );
-    let mut lenght = packages.len() - 1;
+    let mut lenght = packages.len().clone() - 1;
     for vpkg in &packages {
         if vpkg.source == Source::VoidPackages {
             println!(
@@ -239,18 +239,32 @@ pub fn query_for_install(packages_name: String) -> Vec<Packages> {
     packages
 }
 pub fn remove_void_package_if_repo(
-    void_package: Vec<Packages>,
+    mut void_package: Vec<Packages>,
     mut repo_package: Vec<Packages>,
 ) -> Vec<Packages> {
     let mut vec: Vec<Packages> = Vec::new();
-    for vpkg in void_package.clone() {
+    for repo in repo_package.clone() {
         let mut lenght = 0;
-        for i in 0..repo_package.len() {
-            if vpkg.name == repo_package[i].name {
+        for i in 0..void_package.len() {
+            println!("Checking for {} ", void_package[i].name);
+            println!("{} / {} ", void_package[i].name, repo.name);
+            
+           if repo_package.is_empty() {
+                println!("{} pushed" ,void_package[i].name);
+                vec.push(void_package[i].clone());
+                break;
+            };
+            if i == void_package.len() {
+                println!("Breaked");
+                break;
+            }
+            if repo.name == void_package[i].name {
+                void_package.remove(i);
                 break;
             } else {
-                if lenght == repo_package.len() - 1 {
-                    vec.push(vpkg.clone());
+                if lenght == repo_package.len() {
+                    println!("{} pushed" ,void_package[i].name);
+                    vec.push(void_package[i].clone());
                     break;
                 }
             }
@@ -258,6 +272,7 @@ pub fn remove_void_package_if_repo(
         }
     }
     vec.append(&mut repo_package);
+    vec.append(&mut void_package);
     vec
 }
 
