@@ -245,10 +245,7 @@ pub fn remove_void_package_if_repo(
     let mut vec: Vec<Packages> = Vec::new();
     for repo in repo_package.clone() {
         let mut lenght = 0;
-        for i in 0..void_package.len() {
-            println!("Checking for {} ", void_package[i].name);
-            println!("{} / {} ", void_package[i].name, repo.name);
-            
+        for i in 0..void_package.len() {  
            if repo_package.is_empty() {
                 println!("{} pushed" ,void_package[i].name);
                 vec.push(void_package[i].clone());
