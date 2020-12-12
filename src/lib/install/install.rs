@@ -20,7 +20,6 @@ pub fn install(packages: Vec<String>) {
                         ..(split[1].clone().trim().parse::<i64>().unwrap() as usize)
                     {
                         install_package(&vec[(vec.len() - 1) - d as usize]);
-                        break;
                     }
                 } else {
                     println!("too many or too few arguments")
@@ -32,7 +31,6 @@ pub fn install(packages: Vec<String>) {
                         let n = &vec[(vec.len() - 1)
                             - split[f].clone().trim().parse::<i64>().unwrap() as usize];
                         install_package(n);
-                        break;
                     }
                 }
             } else {
@@ -40,11 +38,11 @@ pub fn install(packages: Vec<String>) {
                 if vec.len() >= index {
                     std::process::Command::new("clear").status().unwrap();
                     install_package(&vec[(vec.len() - 1) - index]);
-                    break;
                 } else {
                     println!("the number entered is incorrect, retry !")
                 }
             };
+            break;
         }
     }
 }
