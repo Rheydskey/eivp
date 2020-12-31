@@ -3,7 +3,7 @@ use runas::Command;
 use std::fs::read_dir;
 use std::str;
 
-pub fn query(packages: Vec<String>) {
+pub fn query(packages: Vec<String>, void_package_only: bool) {
     if packages.len() != 0 {
         Command::new("sudo")
             .arg("xbps-query")
@@ -13,12 +13,13 @@ pub fn query(packages: Vec<String>) {
             .status()
             .expect("failed to execute process");
         get_packages_name_repo(packages[0].clone());
-        query_for_install(packages[0].clone());
+        query_for_install(packages[0].clone(), void_package_only);
         output_void_package(get_list_void_package(packages[0].clone()))
     } else {
         println!("Package needed")
     }
 }
+
 pub fn query_info_void_package(packages: String) -> Packages {
     // Get the home variable
     if let Some(i) = std::env::var_os("HOME") {
@@ -145,13 +146,13 @@ pub fn get_list_void_package(packages: String) -> Vec<Packages> {
                                     vec_package.push(packages);
                                 };
                             }
-                            Err(_e) => {}
+                            Err(_) => {}
                         },
-                        Err(_e) => {}
+                        Err(_) => {}
                     }
                 }
             }
-            Err(_e) => {}
+            Err(_) => {}
         };
     }
     vec_package
@@ -215,8 +216,9 @@ fn output_void_package(packages: Vec<Packages>) {
     }
 }
 
-pub fn query_for_install(packages_name: String) -> Vec<Packages> {
-    let packages = remove_void_package_if_repo(
+pub fn query_for_install(packages_name: String, void_package_only: bool) -> Vec<Packages> {
+    let packages;
+    if !void_package_only {packages = remove_void_package_if_repo(
         get_list_void_package(packages_name.to_owned()),
         get_packages_name_repo(packages_name.clone()),
     );
@@ -234,10 +236,20 @@ pub fn query_for_install(packages_name: String) -> Vec<Packages> {
             );
         }
         lenght -= 1;
+    }} else {
+        packages = get_list_void_package(packages_name.to_owned());
+        let lenght = packages.len().clone() - 1;
+        for vpkg in &packages { 
+            println!(
+                "{} {} from {} {}",
+                lenght, vpkg.name, vpkg.source, vpkg.version
+            );
+        }
     }
 
     packages
 }
+
 pub fn remove_void_package_if_repo(
     mut void_package: Vec<Packages>,
     mut repo_package: Vec<Packages>,
@@ -245,9 +257,9 @@ pub fn remove_void_package_if_repo(
     let mut vec: Vec<Packages> = Vec::new();
     for repo in repo_package.clone() {
         let mut lenght = 0;
-        for i in 0..void_package.len() {  
-           if repo_package.is_empty() {
-                println!("{} pushed" ,void_package[i].name);
+        for i in 0..void_package.len() {
+            if repo_package.is_empty() {
+                println!("{} pushed", void_package[i].name);
                 vec.push(void_package[i].clone());
                 break;
             };
@@ -260,7 +272,7 @@ pub fn remove_void_package_if_repo(
                 break;
             } else {
                 if lenght == repo_package.len() {
-                    println!("{} pushed" ,void_package[i].name);
+                    println!("{} pushed", void_package[i].name);
                     vec.push(void_package[i].clone());
                     break;
                 }

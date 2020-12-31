@@ -7,16 +7,25 @@ use crate::lib::update::update;
 use structopt::StructOpt;
 
 #[derive(StructOpt, Debug)]
-#[structopt(name = r"
+#[structopt(
+    name = r"
 ___ _____   _____ 
 | __|_ _\ \ / / _ \
 | _| | | \ V /|  _/
 |___|___| \_/ |_|  
                   
-", about="A easily installer for void packages", version = "\nv2.0.0")]
+",
+    about = "A easily installer for void packages",
+    version = "\nv2.0.0"
+    
+)]
 enum Opt {
+    
     /// Install a package
+    #[structopt()]
     Install {
+        #[structopt(long = "void-package-only")]
+        void_package_only: bool,
         #[structopt()]
         package_name: Vec<String>,
     },
@@ -27,6 +36,8 @@ enum Opt {
     },
     /// Search a package
     Query {
+        #[structopt(long = "void-package-only")]
+        void_package_only: bool,
         #[structopt()]
         package_name: Vec<String>,
     },
@@ -36,10 +47,10 @@ enum Opt {
 fn main() {
     default::default();
     match Opt::from_args() {
-        Opt::Install { package_name } => {
-            install::install(package_name);
+        Opt::Install {void_package_only, package_name } => {
+            install::install(package_name, void_package_only);
         }
-        Opt::Query { package_name } => query::query(package_name),
+        Opt::Query {void_package_only, package_name } => query::query(package_name, void_package_only),
         Opt::Remove { package_name } => remove::remove(package_name),
         Opt::Update {} => update::update(),
     }

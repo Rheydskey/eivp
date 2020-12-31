@@ -3,11 +3,11 @@ use crate::lib::query::query::query_for_install;
 use runas::Command;
 use std::io::{self};
 
-pub fn install(packages: Vec<String>) {
+pub fn install(packages: Vec<String>, void_package_only: bool) {
     if packages.is_empty() {
         println!("No package name provied")
     } else {
-        let vec = query_for_install(packages[0].clone());
+        let vec = query_for_install(packages[0].clone(), void_package_only);
         println!("Choose a number of package (1 2 3 , 1-3)");
         loop {
             let mut buffer = String::new();
