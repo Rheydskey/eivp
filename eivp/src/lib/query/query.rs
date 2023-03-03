@@ -1,18 +1,12 @@
 use crate::lib::query::qstruct::package_struct::*;
-use runas::Command;
-use std::collections::BTreeMap;
+use libxbps::{CommandTrait, XbpsQuery, XbpsSrc};
+use std::collections::{BTreeMap, HashMap};
 use std::fs::read_dir;
 use std::str;
 
 pub fn query(packages: Vec<String>) {
     if packages.len() != 0 {
-        Command::new("sudo")
-            .arg("xbps-query")
-            .arg("-R")
-            .arg("-s")
-            .arg(&packages[0])
-            .status()
-            .expect("failed to execute process");
+        XbpsQuery::search_from_shortdesc(&packages[0]).unwrap();
         get_packages_name_repo(packages[0].clone());
         query_for_install(packages[0].clone());
         output_void_package(query_info_void_package(packages[0].clone()))
@@ -25,7 +19,7 @@ pub fn query_info_void_package(packages: String) -> Packages {
     // Get the home variable
     if let Some(i) = std::env::var_os("HOME") {
         let home = i.to_str().unwrap();
-        let mut packages_info: BTreeMap<String, String> = BTreeMap::new();
+        let mut packages_info: HashMap<String, String> = HashMap::new();
         // Search packages into script
         match read_dir(format!("{}{}", home, "/.eivp/srcpkgs/")) {
             Ok(o) => {
@@ -34,16 +28,10 @@ pub fn query_info_void_package(packages: String) -> Packages {
                         Ok(e) => match e.file_name().into_string() {
                             Ok(e) => {
                                 if packages == e {
-                                    let command = std::process::Command::new(format!(
-                                        "{}{}",
-                                        home, "/.eivp/./xbps-src"
-                                    ))
-                                    .arg("show")
-                                    .arg(&e)
-                                    .output()
-                                    .expect("failed to execute process");
+                                    let xbpssrc =
+                                        XbpsSrc::new(format!("{}{}", home, "/.eivp/./xbps-src"));
 
-                                    let output = str::from_utf8(command.stdout.as_ref()).unwrap();
+                                    let output = xbpssrc.show(&e).unwrap();
                                     let slipted: Vec<&str> = output.split("\n").collect();
                                     for sp in slipted {
                                         let split = sp
@@ -93,13 +81,8 @@ pub fn query_info_void_package(packages: String) -> Packages {
 
 pub fn get_packages_name_repo(packages_name: String) -> Vec<String> {
     let mut packages_info: Vec<String> = Vec::new();
-    let command = std::process::Command::new("xbps-query")
-        .arg("-R")
-        .arg("-s")
-        .arg(packages_name)
-        .output()
-        .expect("failed to execute process");
-    let output = str::from_utf8(command.stdout.as_ref()).unwrap();
+    let output = XbpsQuery::search_from_shortdesc(&packages_name).unwrap();
+
     for sp in output.split("\n").collect::<Vec<&str>>() {
         let s: Vec<&str> = sp.split_whitespace().collect();
         if s.len() >= 1 {
@@ -165,19 +148,13 @@ pub fn query_for_install(packages_name: String) -> Vec<Packages> {
 pub fn get_info_repo_packages(packages_name: String) -> Packages {
     let mut packages_info: BTreeMap<String, String> = BTreeMap::new();
     // Search packages into script
-    let command = std::process::Command::new("xbps-query")
-        .arg("-R")
-        .arg("-S")
-        .arg(&packages_name)
-        .output()
-        .expect("failed to execute process");
+    let output = XbpsQuery.spawn(&["-RS", &packages_name]).unwrap();
 
-    let output = String::from(str::from_utf8(command.stdout.as_ref()).unwrap());
     let slipted: Vec<&str> = output.split("\n").collect();
     for sp in slipted {
         let sps = sp.to_string();
         let split: Vec<&str> = sps.split(":").collect();
-        let lenght: usize =  split.len();
+        let lenght: usize = split.len();
         if lenght == 2 {
             packages_info.insert(split[0].to_string(), split[1].to_string());
         }

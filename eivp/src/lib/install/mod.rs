@@ -1,7 +1,9 @@
 use crate::lib::query::qstruct::package_struct::{Packages, Source};
 use crate::lib::query::query::query_for_install;
-use runas::Command;
+use libxbps::{CommandTrait, XbpsInstall, XbpsSrc};
+
 use std::io::{self};
+
 pub fn install(packages: Vec<String>) {
     let vec = query_for_install(packages[0].clone());
     println!("Choose a number of package (1 2 3 , 1-3)");
@@ -37,27 +39,16 @@ pub fn install_package(package: &Packages) {
     println!("I'll install {}", package.name);
     let name = package.name.clone();
     if package.source == Source::Repo {
-        Command::new("sudo")
-            .arg("xbps-install")
-            .arg(&name)
-            .status()
-            .expect("failed to execute process");
+        XbpsInstall.spawn_as_root(&[&name]).unwrap();
     } else if package.source == Source::VoidPackages {
-        //xbps-install xtools
-        Command::new("sudo")
-            .arg("xbps-install")
-            .arg("xtools")
-            .status()
-            .expect("failed to execute process");
+        XbpsInstall.spawn_as_root(&["xtools"]).unwrap();
+
         if let Some(i) = std::env::var_os("HOME") {
             let home = format!("{}/.eivp/masterdir/", &i.to_str().unwrap());
-            std::process::Command::new(format!("{}/.eivp/./xbps-src", &i.to_str().unwrap()))
-                .arg("pkg")
-                .arg(&name)
-                .status()
-                .expect("failed to execute process");
+            XbpsSrc::new(format!("{}/.eivp/./xbps-src", &i.to_str().unwrap()))
+                .pkg(&name)
+                .unwrap();
             std::env::set_current_dir(&home).unwrap();
-            println!("{}", &home);
             std::process::Command::new("xi")
                 .arg(&name)
                 .status()

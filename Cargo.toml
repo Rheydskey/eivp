@@ -1,16 +1,12 @@
-[package]
-name = "eivp"
-version = "0.1.0"
-authors = ["Rheyskey"]
-edition = "2018"
+[workspace]
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
-[dependencies]
-structopt = "0.3.15"
-runas = "0.2.1"
+members = [
+    "eivp",
+    "libxbps"
+]
 
 [profile.release]
 opt-level = "z"
 lto = true
 codegen-units = 1
+debug = true

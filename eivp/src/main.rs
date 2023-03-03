@@ -1,6 +1,6 @@
 mod lib;
-use crate::lib::default::default;
-use crate::lib::install::install;
+use crate::lib::default;
+use crate::lib::install;
 use crate::lib::query::query;
 use crate::lib::remove::remove;
 use crate::lib::update::update;
@@ -27,7 +27,7 @@ enum Opt {
     Update {},
 }
 fn main() {
-    default::default();
+    default::default().unwrap();
     let opt = Opt::from_args();
     match opt {
         Opt::Install { package_name } => {
